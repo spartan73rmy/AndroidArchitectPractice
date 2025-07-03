@@ -1,7 +1,9 @@
 package com.example.eventbus
 
 import getEventsInRealtime
+import getResultEventsInRealtime
 import kotlinx.coroutines.*
+import kotlin.random.Random
 
 private lateinit var eventBus: EventBus
 private val job = Job()
@@ -11,9 +13,27 @@ private val scope = CoroutineScope(Dispatchers.IO + job)
 fun main() {
     initEventBus()
     runBlocking {
-        setumSuscriber(scope)
-        setpSuscriberTwo(scope)
-        setupPublisher()
+//        setumSuscriber(scope)
+//        setpSuscriberTwo(scope)
+//        setupPublisher()
+
+        setupSubscribeResult(scope)
+        setupPublishers()
+    }
+}
+
+suspend fun setupPublishers() {
+    getResultEventsInRealtime().forEach{ result->
+        delay(someTime());
+        eventBus.publish(result)
+    }
+}
+
+fun setupSubscribeResult(scope: CoroutineScope) {
+    scope.launch {
+        eventBus.suscribe<SportEvent.ResultSuccess> {
+            event -> println("Result: ${event.sportName}")
+        }
     }
 }
 
@@ -41,3 +61,5 @@ suspend fun setupPublisher() {
         delay(500)
     }
 }
+
+fun someTime(): Long = Random.nextLong(500, 1_000)
